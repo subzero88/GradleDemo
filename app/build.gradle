@@ -1,0 +1,97 @@
+apply plugin: 'com.android.application'
+
+android {
+    compileSdkVersion 23
+    buildToolsVersion "23.0.2"
+
+    defaultConfig {
+        applicationId "com.subzero.demo"
+        minSdkVersion 14
+        targetSdkVersion 23
+        versionCode 1
+        versionName "1.0"
+        ndk {
+            moduleName "aaa"
+            // 指定CPU类型 "all"表示生成全部类型
+            abiFilters "armeabi", "armeabi-v7a", "x86"
+            // 这个对应 LOCAL_LDLIBS
+            // ldLibs "m", "log", "jnigraphics"
+            // 这个对应的是生成模式
+            // cFlags "-DANDROID_NDK -D_RELEASE"
+        }
+    }
+    // 是否混淆代码
+    buildTypes {
+        release {
+            minifyEnabled false
+            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+
+            applicationVariants.all { variant ->
+                variant.outputs.each { output ->
+                    def outputFile = output.outputFile
+                    if (outputFile != null && outputFile.name.endsWith('.apk')) {
+                        // 输出apk名称为boohee_v1.0_2015-01-15_wandoujia.apk
+                        def fileName = "test_v${defaultConfig.versionName}_${new Date(System.currentTimeMillis())}_${variant.productFlavors[0].name}.apk"
+                        output.outputFile = new File(outputFile.parent, fileName)
+                    }
+                }
+            }
+        }
+        debug {
+
+        }
+    }
+    // 签名文件配置
+    signingConfigs {
+        release {
+            storeFile file("../test.jks")
+            storePassword "111111"
+            keyAlias "test"
+            keyPassword "111111"
+        }
+        debug {
+            // 签名文件路径
+            storeFile file("../test.jks")
+            storePassword "111111"
+            keyAlias "test"
+            keyPassword "111111"
+        }
+    }
+    // 编译时是否检查所有错误
+    lintOptions {
+        abortOnError false
+    }
+    // 资源目录
+    sourceSets {
+        main {
+            // 下面为默认目录，可自己修改
+            manifest.srcFile 'src/main/AndroidManifest.xml'
+            java.srcDirs = ['src/main/java']
+            aidl.srcDirs = ['src/main']
+            renderscript.srcDirs = ['src/main']
+            res.srcDirs = ['src/main/res']
+            // 配置为在app根目录，默认在src/main/assets目录
+            assets.srcDirs = ['assets']
+            // jni代码目录，下面是默认目录
+            jni.srcDirs = ['src/main/jni']
+            // .so文件目录，配置为和jar文件同目录，默认在src/main/jniLibs目录下
+            jniLibs.srcDirs = ['libs']
+        }
+    }
+    productFlavors {
+        hello {
+            manifestPlaceholders = [hello_channel_value: "hello"]
+        }
+    }
+}
+
+dependencies {
+    compile fileTree(include: ['*.jar'], dir: 'libs')
+    testCompile 'junit:junit:4.12'
+    compile 'com.android.support:appcompat-v7:23.1.1'
+    compile 'com.android.support:design:23.1.1'
+    compile project(':lib_demo')
+    compile 'org.codehaus.groovy:groovy-all:2.4.4'
+    compile files('libs/desutil.jar')
+    compile files('libs/BASE64.jar')
+}
